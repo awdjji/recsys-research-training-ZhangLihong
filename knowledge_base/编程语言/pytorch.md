@@ -1,6 +1,4 @@
-
-## 1. 张量基础操作
-
+##1. 张量基础操作
 ### 1.1 创建张量
 
 | 方法 | 说明 | 示例 |
@@ -97,7 +95,7 @@ out = A @ B                # 最简洁写法（推荐）
 ```python
 x = torch.tensor([[2.,3.,4.],[1.,2.,3.]], requires_grad=True)
 y = x ** 2                    # y 会带有 grad_fn=<PowBackward0>
-y.sum().backward()            # 反向传播，计算 dy/dx
+y.sum().backward()            # 反向传播，计算 dy/dx，标量对任意形状的张量求导，结果形状与该张量完全相同
 print(x.grad)                 # 结果为 2x
 ```
 
@@ -280,13 +278,13 @@ class LazyDataset(Dataset):
 
 **关键参数**：
 
-| 参数 | 说明 |
-|------|------|
-| `batch_size` | 每批样本数 |
-| `shuffle=True` | 每个 epoch 打乱加载顺序 |
-| `num_workers` | 数据加载的子进程数（0=主进程加载） |
+| 参数               | 说明                                                                   |
+| ---------------- | -------------------------------------------------------------------- |
+| `batch_size`     | 每批样本数                                                                |
+| `shuffle=True`   | 每个 epoch 打乱加载顺序                                                      |
+| `num_workers`    | 数据加载的子进程数（0=主进程加载）                                                   |
 | `drop_last=True` | 丢弃不足 batch_size 的尾批（**使用 BatchNorm 时建议开启**，尾批 size=1 会导致方差为 0 → NaN） |
-| `collate_fn` | 自定义 batch 拼装函数 |
+| `collate_fn`     | 自定义 batch 拼装函数                                                       |
 
 **迭代方式**：
 ```python
