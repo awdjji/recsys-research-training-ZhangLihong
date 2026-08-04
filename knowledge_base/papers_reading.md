@@ -1,4 +1,4 @@
-# Self-attentive sequential recommendation(泛读)
+## Self-attentive sequential recommendation(泛读)
 过去马尔可夫链和循环神经网络是解决序列推荐的主要范式
 
 马尔可夫链只关注近期的行为来做出预测，一般在较为稀疏的数据集上有不错的表现
@@ -14,7 +14,7 @@
 在稀疏和密集数据集上均优于MC/CNN/RNN；效率高出1个数量级
 
 局限性可能在于只考虑了购买或点击一种行为，对于更多丰富的行为比如停留时间，位置，设备等没有考虑进去；对于太长的行为序列，qkv矩阵的计算开销也是一个问题。
-# Time Interval Aware Self-Attention for Sequential Recommendation(泛读)
+## Time Interval Aware Self-Attention for Sequential Recommendation(泛读)
 过去的方法将历史交互视为有序序列（紧挨着的序列之间间隔都是相同的），没有考虑到不同交互之间的时间间隔
 
 本文提出的方法就是在序列建模框架中显式建模交互时间戳，以探究不同时间间隔对下一物品预测的影响。
@@ -22,7 +22,7 @@
 本文提出的方法结合绝对位置编码和相对时间间隔的优势，构建了一种新的自注意力机制，能够同时感知绝对序列位置和相对时间间隔
 
 在密集和稀疏数据集上都表现优异，同时注意到，当去掉序列位置后，模型退化为没有任何位置信息的自注意力，效果并不理想，所以采用的是融合特征，而非取舍。
-# BERT4Rec: Sequential recommendation with bidirectional encoder representations from transformer
+## BERT4Rec: Sequential recommendation with bidirectional encoder representations from transformer
 SASRec等模型仅关注从左到右的单向序列，这种单向结构仅能对历史物品信息进行编码，限制了每个物品隐藏表示的能力，还有就是用户的行为并不严格遵顼序列顺序，因为外部未观测到的因素太多，比如先买了后置物品然后再买其它物品。
 
 作者引入了深度双向自注意力模型，能够同时融合左右两侧的信息。
@@ -34,3 +34,15 @@ SASRec等模型仅关注从左到右的单向序列，这种单向结构仅能�
 本文依然没有将丰富的物品特征(例如商品的类别、价格,电影的演员阵容等)融入 BERT4Rec,而不只是建模物品 id。当前模型仅依赖 id embedding,没有利用内容/属性信息。
 
 BERT4Rec 每层的计算复杂度是 O(n²d),relative于序列长度 n 是平方级的。虽然文中指出自注意力层可以通过 GPU 有效并行化来缓解这个问题,但这仍是一个内在的效率瓶颈,对于超长序列场景会带来较大的计算和显存开销。
+[
+
+## Multiplex Behavioral Relation Learning for Recommendation via Memory Augmented Transformer Network
+ ### 术语
+ jointly attending to 联合关注/协同注意
+Representation subspaces 表征子空间
+“scaled dot-product attention” 缩放点积注意力
+ ### notes
+第i个用户的第l种行为被向量化为 $X_{l,i}$ ,然后通过一个全局共享权重V，将所有的行为类型映射到$\mathbb{R}^{d \times J}$向量空间里，在高维的向量空间中学习不同行为的共同语义
+提出了多头自注意力网络，其允许已经学习到的特定行为类型表征能够进行交互，同时找到信息量最大的相关信号。同时，由于不同的行为类型会以一种复杂的方式进行融合因为用户的个人因素，多头自注意力机制还能够使行为依赖编码器能够具有从不同的表征子空间中联合关注特征的能力，即从不同的视角去分析用户行为，然后再合并。
+不同类型的行为使用多头注意力机制来衡量相似度。
+提出一个记忆增强注意力网络来学习不同类型行为之间的显式关系，即一些符合逻辑的行为关联，比如游览量很大，但是看过并不代表喜欢，一般来说添加到购物车的物品更容易被购买
