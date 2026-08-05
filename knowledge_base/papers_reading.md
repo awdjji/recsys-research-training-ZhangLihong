@@ -41,6 +41,8 @@ BERT4Rec 每层的计算复杂度是 O(n²d),relative于序列长度 n 是平方
  jointly attending to 联合关注/协同注意
 Representation subspaces 表征子空间
 “scaled dot-product attention” 缩放点积注意力
+“overfitting phenomenon” 过拟合现象
+“parametric weights” 参数化权重(即自定义的权重)
  ### notes
 第i个用户的第l种行为被向量化为 $X_{l,i}$ ,然后通过一个全局共享权重V，将所有的行为类型映射到$\mathbb{R}^{d \times J}$向量空间里，在高维的向量空间中学习不同行为的共同语义
 提出了多头自注意力网络，其允许已经学习到的特定行为类型表征能够进行交互，同时找到信息量最大的相关信号。同时，由于不同的行为类型会以一种复杂的方式进行融合因为用户的个人因素，多头自注意力机制还能够使行为依赖编码器能够具有从不同的表征子空间中联合关注特征的能力，即从不同的视角去分析用户行为，然后再合并。
