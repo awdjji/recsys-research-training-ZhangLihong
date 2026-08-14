@@ -34,7 +34,6 @@ SASRec等模型仅关注从左到右的单向序列，这种单向结构仅能�
 本文依然没有将丰富的物品特征(例如商品的类别、价格,电影的演员阵容等)融入 BERT4Rec,而不只是建模物品 id。当前模型仅依赖 id embedding,没有利用内容/属性信息。
 
 BERT4Rec 每层的计算复杂度是 O(n²d),relative于序列长度 n 是平方级的。虽然文中指出自注意力层可以通过 GPU 有效并行化来缓解这个问题,但这仍是一个内在的效率瓶颈,对于超长序列场景会带来较大的计算和显存开销。
-[
 
 ## Multiplex Behavioral Relation Learning for Recommendation via Memory Augmented Transformer Network
  ### 术语
@@ -43,25 +42,48 @@ Representation subspaces 表征子空间
 “scaled dot-product attention” 缩放点积注意力
 “overfitting phenomenon” 过拟合现象
 “parametric weights” 参数化权重(即自定义的权重)
+“hidden state dimensionality” (Xia 等, 2020, p. 3) 隐藏状态维度，在本文中是指Q,K,V矩阵的维度，即把输入矩阵映射为d维的向量
+“behavior dependency encoder” (Xia 等, 2020, p. 3) 行为依赖编码器
+“behavior type-wise gating mechanism” (Xia 等, 2020, p. 4) 按行为类别划分的门控机制
+“scalar score” (Xia 等, 2020, p. 4) 标量分数
+“the pair-wise loss” (Xia 等, 2020, p. 4) 成对损失，即学习两个物品间的相对排序关系，用户对于正采样的排序结果要在负采样的结果之前。
+“source behavior” (Xia 等, 2020, p. 5) 源行为（辅助信号来源）
+“leave-one-out evaluation strategy” (Xia 等, 2020, p. 5) 留一法，即序列推荐中常用的留出最后一个
+“matrix factorization” (Xia 等, 2020, p. 6) 矩阵分解
+“collaborative filtering” (Xia 等, 2020, p. 6) 协同过滤
+ || 表示拼接操作
+ “decay rate” (Xia 等, 2020, p. 6) 衰减率，一般指学习率衰减，即每个epoch学习率都会乘以这个衰减率
+ “weight decay” (Xia 等, 2020, p. 6) 权重衰减
  ### notes
  MATN 把同一用户在不同交互行为上的 item 交互向量作为多个行为视图：先用多头自注意力学习行为类型之间的依赖，再以共享记忆变换提取每种行为的特定语义，最后通过门控融合各行为表示来预测目标行为。
-## 1. 研究问题与动机
+### 1. 研究问题与动机
 
-输入是多行为隐式反馈张量 `X in R^(I x J x L)`：`I` 个用户、`J` 个物品、`L` 类行为，`x_(i,j,l)=1` 表示用户 `i` 对物品 `j` 发生过第 `l` 类行为。设待预测的行为为目标行为（如购买/喜欢），其余为源行为（如浏览、收藏、加购）。任务是预测未观测的目标行为交互。
-
+输入是多行为隐式反馈张量 X in $R^{(I  J  L)}$：`I` 个用户、`J` 个物品、`L` 类行为，`x_(i,j,l)=1` 表示用户 `i` 对物品 `j` 发生过第 `l` 类行为。设待预测的行为为目标行为（如购买/喜欢），其余为源行为（如浏览、收藏、加购）。任务是预测未观测的目标行为交互。
 论文认为单行为协同过滤忽略两件事：
 1. 行为类型之间可能存在任意且用户相关的依赖，不能只按固定级联链条建模。
 2. 各行为既有跨行为关联，也有不同语义和预测价值；浏览、收藏、加购、购买不能简单等权合并。
-## 2. 模型：从输入到预测
+### 2. 模型：从输入到预测
 对用户 `i`、行为 `l`，将其跨全部物品的交互向量记为 `X_(i,l) in R^J`。
 1. **共享初始化投影**：`X~_(i,l) = V X_(i,l)`，其中 `V in R^(d x J)` 在所有行为间共享。这样得到 `d` 维初始行为表示，并假定不同行为存在可共享的基础语义。
-2. **跨行为依赖编码器**：对同一用户的 `L` 个 `X~_(i,l)` 做多头 scaled dot-product attention。对每一个行为 `l`，它作为 query，与所有行为 `l'` 的 key/value 交互；不同头有各自的 `Q_h,K_h,V_h`。输出 `Y_(i,l)` 与原投影残差相加：`Y~_(i,l)=X~_(i,l)+Y_(i,l)`。它解决“不同类型行为如何相互提供信号”。
-3. **行为上下文记忆重校准**：学习 `M` 个共享记忆变换矩阵 `U_m in R^(d x d)`。针对行为表示 `Y~_(i,l)`，由 `ReLU(K Y~_(i,l)+b)` 得到对各记忆槽的权重 `omega_(m,l)`，再计算 `Z_(i,l)=sum_m omega_(m,l) U_m Y~_(i,l)`。它不是为每个行为独立配一套大网络，而是让行为按不同权重共享一组变换基，学习行为特定上下文。
+2. **跨行为依赖编码器**：对同一用户的 `L` 个 `X~_(i,l)` 做多头 scaled dot-product attention。对每一个行为 `l`，它作为 query，与所有行为 `l'` 的 key/value 交互；不同头有各自的 $Q_{h},K_h,V_h$。输出 `Y_(i,l)` 与原投影残差相加：`Y~_(i,l)=X~_(i,l)+Y_(i,l)`。它解决“不同类型行为如何相互提供信号”。
+3. **行为上下文记忆重校准**：学习 `M` 个共享记忆变换矩阵 $U_m  in  R^{d x d}$。针对行为表示 `Y~_(i,l)`，由 `ReLU(K Y~_(i,l)+b)` 得到对各记忆槽的权重 `omega_(m,l)`，再计算 `Z_(i,l)=sum_m omega_(m,l) U_m Y~_(i,l)`。它不是为每个行为独立配一套大网络，而是让行为按不同权重共享一组变换基，学习行为特定上下文。
 4. **多行为关系聚合**：将每个 `Z_(i,l)` 堆叠后，用可学习的门控 `Softmax(w^T)` 对行为类型加权，获得统一用户表示 `Psi_i`。再经两层带残差的非线性前馈网络，得到 `Gamma_i`。
 5. **预测与训练**：目标行为下，物品 `j` 的分数为 `P_j^T Gamma_i`。对用户采样目标行为正样本与未交互负样本，以 pairwise hinge loss `max(0, 1 - score_pos + score_neg)` 训练，并加入 `L2` 正则。
-## 3. 三个模块的边界
-| 模块 | 回答的问题 | 输入/输出 | 不能替代的模块 |
-| --- | --- | --- | --- |
-| 多行为 Transformer | 哪些行为类型彼此相关、如何传递信息 | `L` 个初始行为表示 -> 跨行为表示 | 不保证保留行为自身语义 |
-| 记忆注意力 | 同一共享表示在不同类型行为下应如何变换 | 跨行为表示 -> 类型特定表示 | 不决定不同类型对最终任务的相对重要性 |
-| 门控聚合 | 哪种行为表示对最终预测更重要 | `L` 个类型特定表示 -> 用户表示 | 不显式建模行为间 pairwise 依赖 |
+### 3. 三个模块的边界
+| 模块              | 回答的问题                      | 输入/输出                | 不能替代的模块              |
+| --------------- | -------------------------- | -------------------- | -------------------- |
+| 多行为 Transformer | 哪些行为类型彼此相关、如何传递信息          | `L` 个初始行为表示 -> 跨行为表示 | 不保证保留行为自身语义          |
+| 记忆注意力           | 将上一层输出的同一共享表示转化为该行为类型的特定表示 | 跨行为表示 -> 类型特定表示      | 不决定不同类型对最终任务的相对重要性   |
+| 门控聚合            | 哪种行为表示对最终预测更重要             | `L` 个类型特定表示 -> 用户表示  | 不显式建模行为间 pairwise 依赖 |
+## Multi-Behavior Hypergraph-Enhanced Transformer  for Sequential Recommendation
+“graph neural networks” (Yang 等, 2022, p. 1) 图神经网络
+“multi-scale” (Yang 等, 2022, p. 1) 多尺度
+“low-rank” (Yang 等, 2022, p. 1) 低秩，即将Q,K,V矩阵投影到低维以降低计算量
+“fine-grained” (Yang 等, 2022, p. 1) 细粒度
+“coarse-grained” (Yang 等, 2022, p. 1) 粗粒度
+“hierarchical long-range item correlations” (Yang 等, 2022, p. 1) 层次化的长程物品联系
+“dynamic behavior-aware item transitions” (Yang 等, 2022, p. 2) 动态行为感知的物品转移模式
+“metric learning” (Yang 等, 2022, p. 2) 度量学习
+“Gross Merchandise Volume (GMV)” (Yang 等, 2022, p. 3) 商品交易总额
+1.解决计算效率：问题本文使用一种配备了低秩自注意力机制的多尺度 Transformer ，能够从细粒度和粗粒度两个层次联合编码行为感知的序列模式。
+2.多种用户行为数据使用：在超图结构中加入全局多行为依赖，用以捕捉层次化的长程物品联系
