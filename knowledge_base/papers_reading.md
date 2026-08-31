@@ -98,9 +98,13 @@ Representation subspaces 表征子空间
 个性化的全局多行为依赖(Personalized Global Multi-Behavior Dependencies)：①不同用户的多行为依赖模式存在个体差异 ②多行为依赖不是简单两两关系，可能是三元甚至更高阶关系
 ### 从输入到预测
 *行为感知序列模式的多尺度建模*：
-	输入:$h_j = e_j ⊕ p_j ⊕ b_j e_j是物品embedding,p_j是时间序列的位置embedding,b_j是行为类型embedding$ 
+	输入:$h_j = e_j ⊕ p_j ⊕ b_j;e_j是物品embedding,p_j是时间序列的位置embedding,b_j是行为类型embedding$ 
 	低秩Transfomer：
 	$\hat{H} = softmax(\dfrac{H · W^Q (E · H · W^K)^T}{\sqrt{d}}) · F · H · W^V$  H是将输入的j个物品序列，形状为$J\times d$，E和F都是$\frac{J}{C}\times J$形状的矩阵，用来将原本$J\times d$的表征映射到$\frac{J}{C}\times J$的向量空间中，同时在这个信息密度更高的向量空间中进行注意力机制的计算，E和F都是可训练的矩阵。
+	多尺度行为的动态性：
+	$Γ^p = \{γ_1,γ_2,...,γ_\frac{J}{p}\} = \{η(h_1...h_p),...,η(h_{J-p+1},...,h_J)\}$将J个物品的序列按大小为p进行分组，分为J/p组，η表示合并操作即使用平均池将长度为p的序列信息全部融合在一个行向量里面，此时，再使用一个Transfomer来学习短期内（即p次交互行为）的动态性：
+	$H^p = softmax(\dfrac{Γ^p · W^Q (Γ^p · W^K)^T}{\sqrt{d}}) Γ^p · W^V$
+	单一尺度并不能很好地体现物品在周期内的行为关系，所以本文设置了两个不同的尺度。同时加上前面的$\hat{H}$,一共就得到了三个尺度的物品关系矩阵
 *全局多行为依赖的个性化超图学习*：
 
 ### 模块边界
