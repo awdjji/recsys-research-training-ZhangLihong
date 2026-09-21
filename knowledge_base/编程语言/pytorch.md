@@ -78,6 +78,7 @@ out = A @ B                # 最简洁写法（推荐）
 | NumPy → Tensor | `B = torch.tensor(A)` |
 | 单元素 Tensor → Python 标量 | `C.item()` 或 `float(C)` |
 | 求所有元素之和 | `tensor.sum()` |
+torch.where(bool,x,y) 如果bool为True则返回x，否则返回y
 
 ---
 

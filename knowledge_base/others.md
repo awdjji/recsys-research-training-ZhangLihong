@@ -32,4 +32,12 @@
 “trivial” 琐碎的，容易的
 “dyadic”  二元的
 “tetradic”  四阶
- 
+"nuanced" 微妙的，细微的
+“simultaneously” 同时地
+Preliminary 初等的，初步的
+align with 和……保持一致
+tailored 定做的
+taxonomy 分类
+formulae 公式
+clarify 澄清
+demonstrate 演示，展示
