@@ -11,6 +11,7 @@
 \tfrac{a}{b}是强制小尺寸分式$\tfrac{a}{b}$ \
 \sqrt{x}表示平方根$\sqrt{x}$
 \sqrt[n]{x}表示n次方根$\sqrt[n]{x}$
+\check表示向下的hat,如$\check{U}$
 # 单词
 “implicit”  隐式的
 “semantic”  语义的
