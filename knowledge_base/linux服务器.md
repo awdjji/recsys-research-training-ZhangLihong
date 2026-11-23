@@ -5,3 +5,9 @@ git -c http.sslVersion=tlsv1.2 clone https://github.com/OrchidViolet/FatsMB.git
 
 问题：LightningCLI 依赖 jsonargparse 做签名解析，装完 PL 后需要额外装 `jsonargparse[signatures]`\
 解决方案:先检查PL的版本，再安装对应的版本\
+
+在vi命令行中输入按:然后输入:
+:set noautoindent 
+:set nosmartindent 
+:set paste
+解决粘贴时文本自动缩进的问题

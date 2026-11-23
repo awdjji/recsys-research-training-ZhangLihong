@@ -69,7 +69,9 @@ out = A @ B                # 最简洁写法（推荐）
 ```
 
 - `torch.dot(a, b)`：**只能用于一维张量**，计算点积（对应元素相乘后求和）
-
+- `torch.multiply(a, b)` 或 `a * b`  是逐元素相乘
+- torch.mm(a, b) 只能用于两个二维矩阵
+- torch.bmm(a, b) 只能用于两个三维矩阵相乘，并且batch_size必须相同
 ### 1.7 类型转换
 
 | 操作 | 代码 |
@@ -78,7 +80,7 @@ out = A @ B                # 最简洁写法（推荐）
 | NumPy → Tensor | `B = torch.tensor(A)` |
 | 单元素 Tensor → Python 标量 | `C.item()` 或 `float(C)` |
 | 求所有元素之和 | `tensor.sum()` |
-torch.where(bool,x,y) 如果bool为True则返回x，否则返回y
+torch.where(bool,x,y) 如果bool为True则返回x，否则返回y，where是逐元素操作的，为True的位置赋x的值，否则赋y的值。
 
 ---
 
@@ -158,7 +160,7 @@ PyTorch 有全局默认 RNG（通过 `torch.manual_seed()` 设置）。任何使
 | 核心方法 | 子类重写 `__init__()` 和 `forward()` |
 | 状态切换 | `.eval()` / `.train()` 递归作用于所有子模块 |
 | 设备/类型迁移 | `.to(device)` / `.float()` 递归改变所有参数 |
-
+继承自这个模块的模块可以像函数一样被调用，而且实例化之后会自动执行forward()函数，并且模块调用机制还会处理 PyTorch 的钩子等功能。
 ### 4.2 nn.Sequential — 快速搭建
 
 ```python
@@ -393,3 +395,11 @@ loader = DataLoader(dataset, batch_size=32, shuffle=True,
 for batch_data, batch_labels in loader:
     ...
 ```
+
+view(-1, D)表示将最后一维固定为D，其它维度合并
+contiguous()保证张量在内存里是按行主序紧密排列的，张量在内存中包含三个部分：
+- 数据指针：数据在内存中的位置
+- 形状：张量的维度信息
+- 步长：每个维度上移动一步对应的内存大小，假如是（3，2）的矩阵，那行移动一步需要跨两个位置，列移动一步需要跨一个位置，即步长大小为(2,1)
+在进行转置等操作时，矩阵本身在内存的存储是没变的，但是步长会改变，即变为了（1，2），这样的访问方式不是连续的，使用contiguous就可以让其在内存中的存储方式变为真的(2,3),步长为(3,1)
+torch.repeat_interleave(..., L, d)将张量在维度d上复制L次
